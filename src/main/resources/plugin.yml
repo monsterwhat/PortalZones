@@ -1,0 +1,4 @@
+name: PortalZones
+version: '${version}'
+main: com.playdeca.portalzones.PortalZones
+api-version: '1.20'
