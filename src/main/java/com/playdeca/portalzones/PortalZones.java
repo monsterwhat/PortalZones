@@ -1,7 +1,6 @@
 package com.playdeca.portalzones;
 
-import com.playdeca.portalzones.commands.CreatePortalZone;
-import com.playdeca.portalzones.commands.ListPortalZones;
+import com.playdeca.portalzones.commands.PortalZoneCommand;
 import com.playdeca.portalzones.listeners.PortalZoneListener;
 import com.playdeca.portalzones.objects.PortalZone;
 import org.bukkit.configuration.ConfigurationSection;
@@ -10,6 +9,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public final class PortalZones extends JavaPlugin {
@@ -25,28 +25,27 @@ public final class PortalZones extends JavaPlugin {
                 return;
             }
 
-            // Load the configuration file
             saveDefaultConfig();
             getLogger().info("PortalZones configuration file has been loaded.");
-            // Load portal zones from the configuration
+            // Load the configuration file
             loadPortalZones();
             getLogger().info("PortalZones portal zones have been loaded.");
 
             getServer().getPluginManager().registerEvents(new PortalZoneListener(this), this);
             getLogger().info("PortalZones listener has been instantiated.");
 
-            // Initialize your plugin, set up event listeners, and other necessary initialization.
-            getLogger().info("PortalZones has been enabled.");
+            // Register the main portal zone's command with alias "/pz" and "/portalzone"
+            getCommand("portalzones").setExecutor(new PortalZoneCommand());
+            getCommand("pz").setExecutor(new PortalZoneCommand());;
+            getLogger().info("PortalZones command has been registered.");
 
-            // Register the command to create Portal Zones.
-            getCommand("pzcreate").setExecutor(new CreatePortalZone());
-            // Register the command to list Portal Zones.
-            getCommand("pzlist").setExecutor(new ListPortalZones());
+            getLogger().info("PortalZones has been enabled.");
 
 
         }catch (Exception e) {
             getLogger().warning("An error occurred while enabling PortalZones.");
             getLogger().warning(e.getMessage());
+            getLogger().info("Disabling PortalZones.");
             getServer().getPluginManager().disablePlugin(this);
         }
     }

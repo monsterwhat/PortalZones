@@ -4,11 +4,11 @@ main: com.playdeca.portalzones.PortalZones
 api-version: '1.20'
 
 commands:
-  pzcreate:
-    description: Create a Portal Zone
-    usage: /pzcreate <name> <region1> <region2> <softcount> <hardcount>
-    permission: portalzones.create
-  pzlist:
-    description: List all Portal Zones
-    usage: /pzlist
-    permission: portalzones.list
+    pz:
+        description: Portal Zones command
+        usage: /pz <create|list|delete|modify>
+        permission: portalzones.command
+    portalzones:
+        description: Portal Zones command
+        usage: /portalzones <create|list|delete|modify>
+        permission: portalzones.command
