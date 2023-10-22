@@ -4,24 +4,25 @@ import com.playdeca.portalzones.PortalZones;
 import com.playdeca.portalzones.objects.PortalZone;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Sound;
+import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PortalZoneListener implements Listener {
     private final PortalZones plugin;
     private final HashMap<String, Location> portalZones;
-    private Map<Player, BukkitTask> playerTimers = new HashMap<>();
-    BukkitTask SoftTimer, HardTimer;
+    BukkitTask SoftTimer, HardTimer, countDown;
+    private AtomicBoolean teleportFlag = new AtomicBoolean(false);
+    boolean insidePortalZone = false;
+
 
 
     public PortalZoneListener(PortalZones plugin) {
@@ -32,13 +33,7 @@ public class PortalZoneListener implements Listener {
     public void onPlayerMove(PlayerMoveEvent event) {
         try {
             Player player = event.getPlayer();
-            Location from = event.getFrom();
-            Location to = event.getTo();
-
-            if (from != null && to != null && !from.getBlock().equals(to.getBlock())) {
-                // Player moved, check if they entered a portal zone
-                checkPortalZones(player);
-            }
+            checkPortalZones(player);
         }catch (Exception e) {
             Bukkit.getLogger().warning("Error on onPlayerMove: " + e.getMessage());
         }
@@ -46,34 +41,35 @@ public class PortalZoneListener implements Listener {
 
     private void checkPortalZones(Player player) {
         try {
-            boolean insidePortalZone = false; // Initialize the flag as false
+            boolean playerInPortalZone = false;  // Initialize a flag to track if the player is within any portal zone
 
             for (Map.Entry<String, Location> entry : portalZones.entrySet()) {
                 String regionName = entry.getKey();
                 Location portalLocation = entry.getValue();
 
                 if (PortalZone.isWithinRegion(player, regionName)) {
-                    if (!playerTimers.containsKey(player)) {
+                    if (!insidePortalZone) {
                         Bukkit.getLogger().info(player.getName() + " entered a portal zone");
 
-                        // Get the softCount and hardCount from the PortalZone (You need a way to identify which PortalZone this is)
+                        // Get the softCount and hardCount from the PortalZone
                         int softCount = PortalZone.getSoftCountForPortalZone(regionName);
                         int hardCount = PortalZone.getHardCountForPortalZone(regionName);
 
                         // Start the timer
                         Bukkit.getLogger().info("Starting timers for " + player.getName() + " in region " + regionName);
                         startTimers(player, portalLocation, softCount, hardCount);
+                        insidePortalZone = true; // Set the flag to true
                     }
-
-                    insidePortalZone = true; // Set the flag to true
-                    break;
+                    playerInPortalZone = true;  // Set the flag to true as the player is within a portal zone
                 }
             }
-
-            // Check if the player left all portal zones and cancel timers if necessary
-            if (!insidePortalZone && playerTimers.containsKey(player)) {
-                Bukkit.getLogger().info(player.getName() + " left a portal zone");
-                cancelTimers(player);
+            // Check if the player left all portal zones
+            if (!playerInPortalZone && insidePortalZone) {
+                // Player left the portal zone
+                player.sendMessage("You have left a teleporting zone...");
+                Bukkit.getLogger().info(player.getName() + " left the portalZone");
+                CancelTimers(player);
+                insidePortalZone = false; // Set the flag to false
             }
 
         } catch (Exception e) {
@@ -81,100 +77,65 @@ public class PortalZoneListener implements Listener {
         }
     }
 
-    private void startTimers(Player player, Location portalLocation, int softCount, int hardCount) {
-        // Check if there is no existing timer for the player
-        if (!playerTimers.containsKey(player)) {
-
-            AtomicInteger softCountTime = new AtomicInteger(softCount);
-            AtomicInteger hardCountTime = new AtomicInteger(hardCount);
-
-            BukkitTask softCountTask = null;
-            AtomicReference<BukkitTask> hardCountTask = new AtomicReference<>(null);
-
-            // Start the softCount timer
-            if (softCountTime.get() > 0) {
-                BukkitTask finalSoftCountTask = softCountTask;
-                softCountTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-                    // Decrement the softCount time and check if it's zero or negative
-                    if (softCountTime.decrementAndGet() <= 0) {
-                        // SoftCount is done; start the hardCount timer
-                        if (hardCountTime.get() > 0) {
-                            // Notify the player that they entered a teleporting zone
-                            player.sendMessage("Entered a teleporting zone...");
-                            // Start the hardCount timer
-                            hardCountTask.set(Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-                                // Decrement the hardCount time and check if it's zero or negative
-                                if (hardCountTime.decrementAndGet() <= 0) {
-                                    // Teleport the player to the specified portal location
-                                    player.teleport(portalLocation);
-                                    if (hardCountTask.get() != null) {
-                                        // Cancel the hardCount timer if it exists
-                                        hardCountTask.get().cancel();
-                                    }
-                                } else {
-                                    // Notify the player about the remaining teleport time
-                                    player.sendMessage("Teleporting in " + hardCountTime.get() + " seconds...");
-                                }
-                            }, 0L, 20L));
-                        } else {
-                            // Teleport the player to the specified portal location immediately
-                            player.teleport(portalLocation);
-                        }
-                        // Cancel the softCount timer
-                        if (finalSoftCountTask != null) {
-                            finalSoftCountTask.cancel();
-                        }
-                    }
-                }, 0L, 20L);
-            }
-
-            // Store the timers for the player in the playerTimers map
-            playerTimers.put(player, softCountTask);
-        }
-    }
-
-    void startTimers2(){
-
+    void startTimers(Player player, Location portalLocation, int softCount, int hardCount){
+        startSoftTimer(player, portalLocation, softCount, hardCount);
     }
 
     void startSoftTimer(Player player, Location portalLocation, int softCount, int hardCount){
-        SoftTimer = new BukkitRunnable() {
-            int counter = softCount;
+        if(softCount == 0){
+            softCount = 20;
+        }
+        player.sendMessage("Entered a teleporting zone...");
 
+        SoftTimer = new BukkitRunnable() {
             @Override
             public void run() {
-                if (counter <= 0) {
-                    this.cancel();
-                    // SoftCount is done; start the hardCount timer
-                    if (hardCount > 0) {
-                        player.sendMessage("Entered a teleporting zone...");
-                        startHardTimer(player, portalLocation, hardCount);
-                    } else {
-                        player.teleport(portalLocation);
-                    }
-                } else {
-                    player.sendMessage("Teleporting in " + counter + " seconds...");
-                    counter--;
-                }
+            startHardTimer(player, hardCount, portalLocation);
             }
-        }.runTaskTimer(this.plugin, 0L, 20L);
+        }.runTaskLaterAsynchronously(this.plugin, 20L*softCount);
     }
 
-    private void startHardTimer(Player player, Location portalLocation, int hardCount){
+    private void startHardTimer(Player player, int hardCount, Location portalLocation){
+        if(hardCount == 0){
+            hardCount = 20;
+        }
+        Bukkit.getLogger().info("Starting hard timer for " + player.getName() + " in region " + portalLocation);
+        startCountdown(player, hardCount);
         HardTimer = new BukkitRunnable() {
-            int counter = hardCount;
-
             @Override
             public void run() {
-                if (counter <= 0) {
-                    this.cancel();
-                    player.teleport(portalLocation);
-                } else {
-                    player.sendMessage("Teleporting in " + counter + " seconds...");
-                    counter--;
+                player.teleport(portalLocation);
+            }
+        }.runTaskLater(this.plugin, 20L*hardCount);
+    }
+
+    public void startCountdown(Player player, int countDownTime){
+        countDown = new BukkitRunnable() {
+            int countDownLimit = countDownTime;
+            BossBar timeBar = Bukkit.createBossBar("", org.bukkit.boss.BarColor.YELLOW, org.bukkit.boss.BarStyle.SOLID);
+            @Override
+            public void run() {
+                try {
+                    if(!timeBar.getPlayers().contains(player)){
+                        timeBar.addPlayer(player);
+                    }
+
+                    if (countDownLimit > 0){
+                        var timeLeft = countDownLimit--;
+                        player.sendMessage("Teleporting in " + timeLeft + "s ...");
+                        timeBar.setTitle("Teleporting in " + timeLeft + "s ...");
+                        timeBar.setProgress((double) timeLeft / countDownTime);
+                    }else{
+                        player.sendMessage("Teleporting...");
+                        player.playSound(player.getLocation(), Sound.ITEM_CHORUS_FRUIT_TELEPORT, 1, 1);
+                        timeBar.removePlayer(player);
+                        countDown.cancel();
+                    }
+                }catch (Exception e){
+                    Bukkit.getLogger().info("Error on startCountdown: " + e.getMessage());
                 }
             }
-        }.runTaskTimerAsynchronously(this.plugin, 0L, 20L);
+        }.runTaskTimerAsynchronously(plugin,0L,20L);
     }
 
     public void stopSoftTimer() {
@@ -189,21 +150,16 @@ public class PortalZoneListener implements Listener {
         }
     }
 
-
-    private void cancelTimers(Player player) {
-        try {
-            // Cancel any existing timers for the player
-            if (playerTimers.containsKey(player)) {
-                BukkitTask task = playerTimers.get(player);
-                if (task != null) {
-                    task.cancel();
-                }
-                playerTimers.remove(player);
-            }
-        }catch (Exception e) {
-            Bukkit.getLogger().info("Error on cancelTimers: " + e.getMessage());
+    public void stopCountDown(){
+        if (countDown != null) {
+            countDown.cancel();
         }
+    }
 
+    public void CancelTimers(Player player){
+        stopSoftTimer();
+        stopHardTimer();
+        stopCountDown();
     }
 
 
