@@ -42,6 +42,9 @@ public class PortalZoneCommand implements CommandExecutor {
                             // Handle create
                             handleCreateCommand(player, args);
                             break;
+                        case "select":
+                            // Handle select
+                            break;
                         case "list":
                             // Handle list
                             handleListCommand(player);
@@ -87,6 +90,7 @@ public class PortalZoneCommand implements CommandExecutor {
                     }
 
                     if (selection != null) {
+
                         BlockVector3 min = selection.getMinimumPoint();
                         BlockVector3 max = selection.getMaximumPoint();
 

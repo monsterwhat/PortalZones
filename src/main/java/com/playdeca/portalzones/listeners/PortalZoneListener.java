@@ -20,10 +20,8 @@ public class PortalZoneListener implements Listener {
     private final PortalZones plugin;
     private final HashMap<String, Location> portalZones;
     BukkitTask SoftTimer, HardTimer, countDown;
-    private AtomicBoolean teleportFlag = new AtomicBoolean(false);
     boolean insidePortalZone = false;
-
-
+    BossBar timeBar = Bukkit.createBossBar("", org.bukkit.boss.BarColor.YELLOW, org.bukkit.boss.BarStyle.SOLID);
 
     public PortalZoneListener(PortalZones plugin) {
         this.plugin = plugin;
@@ -112,7 +110,6 @@ public class PortalZoneListener implements Listener {
     public void startCountdown(Player player, int countDownTime){
         countDown = new BukkitRunnable() {
             int countDownLimit = countDownTime;
-            BossBar timeBar = Bukkit.createBossBar("", org.bukkit.boss.BarColor.YELLOW, org.bukkit.boss.BarStyle.SOLID);
             @Override
             public void run() {
                 try {
@@ -122,13 +119,13 @@ public class PortalZoneListener implements Listener {
 
                     if (countDownLimit > 0){
                         var timeLeft = countDownLimit--;
-                        player.sendMessage("Teleporting in " + timeLeft + "s ...");
+                        //player.sendMessage("Teleporting in " + timeLeft + "s ...");
                         timeBar.setTitle("Teleporting in " + timeLeft + "s ...");
+                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
                         timeBar.setProgress((double) timeLeft / countDownTime);
                     }else{
                         player.sendMessage("Teleporting...");
                         player.playSound(player.getLocation(), Sound.ITEM_CHORUS_FRUIT_TELEPORT, 1, 1);
-                        timeBar.removePlayer(player);
                         countDown.cancel();
                     }
                 }catch (Exception e){
@@ -160,6 +157,8 @@ public class PortalZoneListener implements Listener {
         stopSoftTimer();
         stopHardTimer();
         stopCountDown();
+        timeBar.setProgress(0);
+        timeBar.removePlayer(player);
     }
 
 
