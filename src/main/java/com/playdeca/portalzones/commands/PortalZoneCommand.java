@@ -26,6 +26,12 @@ import java.util.Objects;
 import java.util.Set;
 
 public class PortalZoneCommand implements CommandExecutor {
+
+    File configFile = new File(PortalZones.getPlugin(PortalZones.class).getDataFolder(), "portalzones.yml");
+    FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
+    SessionManager sessionManager = WorldEdit.getInstance().getSessionManager();
+    PortalZone selectedZone;
+
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, String label, String[] args) {
         if (sender instanceof Player player) {
@@ -33,7 +39,7 @@ public class PortalZoneCommand implements CommandExecutor {
                 case "portalzone":
                 case "pz":
                     if (args.length == 0) {
-                        player.sendMessage("Usage: /" + label + " <create|list>");
+                        player.sendMessage("Usage: /" + label + " <create|select|list|modify|delete|newcreate>");
                         return true;
                     }
                     String subCommand = args[0].toLowerCase();
@@ -44,6 +50,11 @@ public class PortalZoneCommand implements CommandExecutor {
                             break;
                         case "select":
                             // Handle select
+                            handleSelectCommand(player, args);
+                            break;
+                        case "update":
+                            // Handle update
+                            handleUpdateCommand(player, args);
                             break;
                         case "list":
                             // Handle list
@@ -58,7 +69,7 @@ public class PortalZoneCommand implements CommandExecutor {
                             handleDeleteCommand(player, args, label);
                             break;
                         default:
-                            player.sendMessage("Unknown subcommand. Usage: /" + label + " <create|list>");
+                            player.sendMessage("Unknown subcommand. Usage: /" + label + " <create|select|list|modify|delete|newcreate>");
                             break;
                     }
                     break;
@@ -69,68 +80,202 @@ public class PortalZoneCommand implements CommandExecutor {
         return true;
     }
 
-    private void handleCreateCommand(Player player, String[] args) {
-        try {
-            if (player != null) {
-                if (args.length == 5) {
-                    String zoneName = args[0];
-                    String region1 = args[1];
-                    String region2 = args[2];
-                    int softCount = Integer.parseInt(args[3]);
-                    int hardCount = Integer.parseInt(args[4]);
-
-                    World world = new BukkitWorld(player.getWorld());
-
-                    SessionManager sessionManager = WorldEdit.getInstance().getSessionManager();
-                    Region selection;
-                    try {
-                        selection = sessionManager.get(BukkitAdapter.adapt(player)).getSelection(world);
-                    } catch (IncompleteRegionException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                    if (selection != null) {
-
-                        BlockVector3 min = selection.getMinimumPoint();
-                        BlockVector3 max = selection.getMaximumPoint();
-
-                        // Convert WorldEdit's Location to Bukkit Location for XYZ1 and XYZ2
-                        Location xyz1 = new Location(BukkitAdapter.adapt(selection.getWorld()), min.getX(), min.getY(), min.getZ());
-                        Location xyz2 = new Location(BukkitAdapter.adapt(selection.getWorld()), max.getX(), max.getY(), max.getZ());
-
-                        // Create the PortalZone with XYZ1 and XYZ2 locations
-                        PortalZone portalZone = new PortalZone(zoneName, region1, region2, softCount, hardCount, xyz1, xyz2);
-
-                        // Save the new portal zone to the configuration
-                        File configFile = new File(PortalZones.getPlugin(PortalZones.class).getDataFolder(), "portalzones.yml");
-                        FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
-
-                        portalZone.saveToConfig(config);
-
-                        try {
-                            config.save(configFile);
-                        } catch (IOException e) {
-                            Bukkit.getLogger().warning("Error saving portal zone: " + e.getMessage());
-                            player.sendMessage("Failed to save the portal zone. Please check the console for errors.");
-                        }
-
-                        player.sendMessage("Portal Zone created: " + zoneName);
-                    } else {
-                        player.sendMessage("Please select a WorldEdit region using the WorldEdit wand tool before using this command.");
-                    }
-                } else {
-                    player.sendMessage("Usage: /pzcreate <name> <region1> <region2> <softcount> <hardcount>");
+    private void handleCreateCommand(Player player, String[] args){
+        if(player!=null){
+            if (args.length == 2) {
+                try {
+                String zoneName = args[1];
+                PortalZone newPortal = new PortalZone(zoneName);
+                newPortal.saveToConfig(config);
+                config.save(configFile);
+                selectedZone = newPortal;
+                player.sendMessage("Portal Zone created and selected: " + zoneName);
+                } catch (IOException e) {
+                    Bukkit.getLogger().warning("Error saving portal zone: " + e.getMessage());
+                    Bukkit.getLogger().warning("Error saving portal zone: " + e.getStackTrace());
+                    player.sendMessage("Failed to save the portal zone. Please check the console for errors.");
                 }
-            } else {
-                Bukkit.getLogger().warning("Player is null.");
+            }else {
+                player.sendMessage("Usage: /pz newcreate <name>");
             }
-        }catch (Exception e) {
-            Bukkit.getLogger().warning("Error creating portal zone: " + e.getMessage());
-            assert player != null;
-            player.sendMessage("Failed to create the portal zone. Please check the console for errors, or report this bug to the staff.");
         }
-        assert player != null;
-        player.sendMessage("Create command was executed.");
+    }
+
+    private void handleSelectCommand(Player player, String[] args){
+        if(player!=null){
+            if (args.length == 2) {
+                String zoneName = args[1];
+                //should check if the zone exists first...
+
+                selectedZone = new PortalZone(zoneName);
+                player.sendMessage("Portal Zone selected: " + zoneName);
+            }else {
+                player.sendMessage("Usage: /pz select <PortalZoneName>");
+            }
+        }
+    }
+
+    private void handleUpdateCommand(Player player, String[] args){
+        if(player!=null){
+                if (args.length < 2) {
+                    player.sendMessage("Usage: /pz update <property> [value]");
+                    return;
+                }
+
+                String property = args[1];
+
+                switch (property) {
+                    case "all":
+                        if (args.length != 6) {
+                            player.sendMessage("Usage: /pz update <all> <region1Name> <region2Name> <softcountTime> <hardcountTime>");
+                            break;
+                        }
+                        updateRegion1(args[2]);
+                        updateRegion2(args[3]);
+                        updateSoftCount(Integer.parseInt(args[4]));
+                        updateHardCount(Integer.parseInt(args[5]));
+                        updateXYZs(player);
+
+                        saveChanges();
+
+                        break;
+                    case "region1":
+                        if (args.length != 3) {
+                            player.sendMessage("Usage: /pz update <region1> <regionName>");
+                            break;
+                        }
+                        updateRegion1(args[2]);
+                        saveChanges();
+                        break;
+                    case "region2":
+                        if (args.length != 3) {
+                            player.sendMessage("Usage: /pz update <region2> <regionName>");
+                            break;
+                        }
+                        updateRegion2(args[2]);
+                        saveChanges();
+                        break;
+                    case "softcount":
+                        if (args.length != 3) {
+                            player.sendMessage("Usage: /pz update <softcount> <Time>");
+                            break;
+                        }
+                        updateSoftCount(Integer.parseInt(args[2]));
+                        saveChanges();
+                        break;
+                    case "hardcount":
+                        if (args.length != 3) {
+                            player.sendMessage("Usage: /pz update <hardcount> <Time>");
+                            break;
+                        }
+                        updateHardCount(Integer.parseInt(args[2]));
+                        saveChanges();
+                        break;
+                    case "destinations":
+                        if (args.length != 2) {
+                            player.sendMessage("Usage: /pz update <destinations> (Destinations are the selections of WorldEdit)");
+                            break;
+                        }
+                        updateXYZs(player);
+                        saveChanges();
+                        break;
+                    case "xyz1":
+                        //TODO
+                        break;
+                    case "xyz2":
+                        //TODO
+                        break;
+                    default:
+                        player.sendMessage("Unknown property: " + property);
+                        break;
+                }
+            }
+    }
+
+    private void saveChanges(){
+        selectedZone.saveToConfig(config);
+        try {
+            config.save(configFile);
+        } catch (IOException e) {
+            Bukkit.getLogger().warning("Error saving portal zone: " + e.getMessage());
+            Bukkit.getLogger().warning("Error saving portal zone: " + e.getStackTrace());
+        }
+    }
+
+    private void updateRegion1(String regionName){
+        selectedZone.setRegion1(regionName);
+    }
+
+    private void updateRegion2(String regionName){
+        selectedZone.setRegion2(regionName);
+    }
+
+    private void updateSoftCount(int softCount){
+        selectedZone.setSoftCount(softCount);
+    }
+
+    private void updateHardCount(int hardCount){
+        selectedZone.setHardCount(hardCount);
+    }
+
+    private void updateXYZs(Player player){
+        Region selection;
+
+        try {
+            World world = new BukkitWorld(player.getWorld());
+            selection = sessionManager.get(BukkitAdapter.adapt(player)).getSelection(world);
+            if (selection != null) {
+                BlockVector3 min = selection.getMinimumPoint();
+                BlockVector3 max = selection.getMaximumPoint();
+                // Convert WorldEdit's Location to Bukkit Location for XYZ1 and XYZ2
+                Location xyz1 = new Location(BukkitAdapter.adapt(selection.getWorld()), min.getX(), min.getY(), min.getZ());
+                Location xyz2 = new Location(BukkitAdapter.adapt(selection.getWorld()), max.getX(), max.getY(), max.getZ());
+
+                selectedZone.setXyz1(xyz1);
+                selectedZone.setXyz2(xyz2);
+                player.sendMessage("XYZ1 and XYZ2 updated.");
+                player.sendMessage("XYZ1: " + xyz1.getX() + " " + xyz1.getY() + " " + xyz1.getZ());
+                player.sendMessage("XYZ2: " + xyz2.getX() + " " + xyz2.getY() + " " + xyz2.getZ());
+
+            } else {
+                player.sendMessage("Please select the destination (Right Click on the origin -> then LeftClick on the destination) blocks using the WorldEdit wand tool before using this command.");
+            }
+
+        } catch (IncompleteRegionException e) {
+            player.sendMessage("Please select the destination (Right Click on the origin -> then LeftClick on the destination) blocks using the WorldEdit wand tool before using this command.");
+        }
+    }
+
+    private void updateXYZ1(Player player, Location xyz1){
+        Region selection;
+        try {
+            World world = new BukkitWorld(player.getWorld());
+            selection = sessionManager.get(BukkitAdapter.adapt(player)).getSelection(world);
+            if (selection != null) {
+                BlockVector3 newSelection = selection.getMaximumPoint();
+                Location newLocation = new Location(BukkitAdapter.adapt(selection.getWorld()), newSelection.getX(), newSelection.getY(), newSelection.getZ());
+
+                selectedZone.setXyz1(newLocation);
+            }
+        }catch (Exception e){
+            Bukkit.getLogger().warning("Error updating XYZ1: " + e.getMessage());
+            Bukkit.getLogger().warning("Error updating XYZ1: " + e.getStackTrace());
+        }
+    }
+    private void updateXYZ2(Player player, Location xyz2){
+        Region selection;
+        try {
+            World world = new BukkitWorld(player.getWorld());
+            selection = sessionManager.get(BukkitAdapter.adapt(player)).getSelection(world);
+            if (selection != null) {
+                BlockVector3 newSelection = selection.getMaximumPoint();
+                Location newLocation = new Location(BukkitAdapter.adapt(selection.getWorld()), newSelection.getX(), newSelection.getY(), newSelection.getZ());
+                selectedZone.setXyz2(newLocation);
+            }
+        }catch (Exception e){
+            Bukkit.getLogger().warning("Error updating XYZ2: " + e.getMessage());
+            Bukkit.getLogger().warning("Error updating XYZ2: " + e.getStackTrace());
+        }
     }
 
     private void handleListCommand(Player player) {
@@ -150,8 +295,10 @@ public class PortalZoneCommand implements CommandExecutor {
                     String region2 = config.getString(path + ".region2");
                     int softCount = config.getInt(path + ".softCount");
                     int hardCount = config.getInt(path + ".hardCount");
+                    Location xyz1 = Location.deserialize(Objects.requireNonNull(config.getConfigurationSection(path + ".xyz1")).getValues(true));
+                    Location xyz2 = Location.deserialize(Objects.requireNonNull(config.getConfigurationSection(path + ".xyz2")).getValues(true));
                     player.sendMessage(name + " - Region1: " + region1 + " - Region2: " + region2 +
-                            " - SoftCount: " + softCount + " - HardCount: " + hardCount);
+                            " - SoftCount: " + softCount + " - HardCount: " + hardCount + " - XYZ1: " + xyz1.getX() + " " + xyz1.getY() + " " + xyz1.getZ() + " - XYZ2: " + xyz2.getX() + " " + xyz2.getY() + " " + xyz2.getZ());
             }
         }
     }
@@ -186,10 +333,6 @@ public class PortalZoneCommand implements CommandExecutor {
     private void handleModifyCommand(Player player, String[] args, String label) {
         if (args.length >= 3) {
             String zoneName = args[1];
-
-            // Load the list of portal zones from the configuration
-            File configFile = new File(PortalZones.getPlugin(PortalZones.class).getDataFolder(), "portalzones.yml");
-            FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
 
             String path = "portalZones." + zoneName;
 
@@ -284,8 +427,4 @@ public class PortalZoneCommand implements CommandExecutor {
             player.sendMessage("Usage: /" + label + " modify <zoneName> <property=value> [property=value...]");
         }
     }
-
-
-
-
 }

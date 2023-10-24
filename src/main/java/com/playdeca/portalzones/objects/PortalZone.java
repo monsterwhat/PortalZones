@@ -30,6 +30,17 @@ public class PortalZone {
         this.xyz2 = xyz2;
     }
 
+    public PortalZone(String name){
+        this.name = name;
+        this.region1 = "";
+        this.region2 = "";
+        this.softCount = 0;
+        this.hardCount = 0;
+        Location defaultLocation = new Location(Bukkit.getWorld("world"), 0, 0, 0);
+        this.xyz1 = defaultLocation;
+        this.xyz2 = defaultLocation;
+    }
+
     public static boolean isWithinRegion(Player player, String regionName) {
         try {
         RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery();
@@ -38,6 +49,7 @@ public class PortalZone {
         return regions.getRegions().stream().anyMatch(region -> region.getId().equalsIgnoreCase(regionName));
         }catch (Exception e){
             Bukkit.getLogger().warning("Error checking if player is within region: " + regionName);
+            Bukkit.getLogger().warning(e.getMessage());
             return false;
         }
     }
@@ -53,6 +65,7 @@ public class PortalZone {
             config.set(path + ".xyz2", xyz2.serialize());
         }catch (Exception e){
             Bukkit.getLogger().warning("Error saving portal zone: " + name);
+            Bukkit.getLogger().warning(e.getMessage());
         }
     }
 
@@ -69,6 +82,7 @@ public class PortalZone {
             return new PortalZone(name, region1, region2, softCount, hardCount, xyz1, xyz2);
         }catch (Exception e) {
             Bukkit.getLogger().warning("Error loading portal zone: " + name);
+            Bukkit.getLogger().warning(e.getMessage());
             return null;
         }
     }
@@ -81,8 +95,9 @@ public class PortalZone {
 
             HashMap<String, Location> portalZonesMap = new HashMap<>();
 
-            for (String name : config.getConfigurationSection("portalZones").getKeys(false)) {
+            for (String name : Objects.requireNonNull(config.getConfigurationSection("portalZones")).getKeys(false)) {
                 PortalZone portalZone = loadFromConfig(config, name);
+                assert portalZone != null;
                 portalZonesMap.put(portalZone.getRegion1(), portalZone.getXyz1());
                 portalZonesMap.put(portalZone.getRegion2(), portalZone.getXyz2());
             }
@@ -157,4 +172,30 @@ public class PortalZone {
     public Location getXyz2() {
         return xyz2;
     }
+
+    public void setRegion1(String region1) {
+        this.region1 = region1;
+    }
+
+    public void setRegion2(String region2) {
+        this.region2 = region2;
+    }
+
+    public void setSoftCount(int softCount) {
+        this.softCount = softCount;
+    }
+
+    public void setHardCount(int hardCount) {
+        this.hardCount = hardCount;
+    }
+
+    public void setXyz1(Location xyz1) {
+        this.xyz1 = xyz1;
+    }
+
+    public void setXyz2(Location xyz2) {
+        this.xyz2 = xyz2;
+    }
+
+
 }
