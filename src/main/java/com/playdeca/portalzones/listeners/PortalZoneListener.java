@@ -2,6 +2,7 @@ package com.playdeca.portalzones.listeners;
 
 import com.playdeca.portalzones.PortalZones;
 import com.playdeca.portalzones.objects.PortalZone;
+import com.playdeca.portalzones.services.PortalZoneService;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -25,7 +26,7 @@ public class PortalZoneListener implements Listener {
 
     public PortalZoneListener(PortalZones plugin) {
         this.plugin = plugin;
-        this.portalZones = PortalZone.getAllPortalZones();
+        this.portalZones = PortalZoneService.getAllPortalZones();
     }
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
@@ -45,13 +46,13 @@ public class PortalZoneListener implements Listener {
                 String regionName = entry.getKey();
                 Location portalLocation = entry.getValue();
 
-                if (PortalZone.isWithinRegion(player, regionName)) {
+                if (PortalZoneService.isWithinRegion(player, regionName)) {
                     if (!insidePortalZone) {
                         Bukkit.getLogger().info(player.getName() + " entered a portal zone");
 
                         // Get the softCount and hardCount from the PortalZone
-                        int softCount = PortalZone.getSoftCountForPortalZone(regionName);
-                        int hardCount = PortalZone.getHardCountForPortalZone(regionName);
+                        int softCount = PortalZoneService.getSoftCountForPortalZone(regionName);
+                        int hardCount = PortalZoneService.getHardCountForPortalZone(regionName);
 
                         // Start the timer
                         Bukkit.getLogger().info("Starting timers for " + player.getName() + " in region " + regionName);

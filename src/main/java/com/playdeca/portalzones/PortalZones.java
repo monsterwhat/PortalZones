@@ -3,6 +3,7 @@ package com.playdeca.portalzones;
 import com.playdeca.portalzones.commands.PortalZoneCommand;
 import com.playdeca.portalzones.listeners.PortalZoneListener;
 import com.playdeca.portalzones.objects.PortalZone;
+import com.playdeca.portalzones.services.PortalZoneService;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -78,24 +79,28 @@ public final class PortalZones extends JavaPlugin {
         }
     }
 
-    private void loadPortalZones() {
+    public void loadPortalZones() {
         try {
+            // clear portalZones before repopulating
+            portalZones.clear();
+            // Get the portal zones section from the configuration
             ConfigurationSection portalZonesSection = getConfig().getConfigurationSection("portalZones");
+            // Check if the portal zones section is null
             if (portalZonesSection != null) {
                 // Save the new portal zone to the configuration
                 File configFile = new File(PortalZones.getPlugin(PortalZones.class).getDataFolder(), "portalzones.yml");
                 FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
                 for (String name : portalZonesSection.getKeys(false)) {
                     // Load each portal zone and populate the portalZones map
-                    PortalZone portalZone = PortalZone.loadFromConfig(config, name);
+                    PortalZone portalZone = PortalZoneService.loadFromConfig(config, name);
                     portalZones.put(name, portalZone);
                 }
             }
+            getLogger().info("PortalZones portal zones have been loaded/reloaded.");
         }catch (Exception e) {
             getLogger().severe("An error occurred while loading the portal zones list.");
             getLogger().severe(e.getMessage());
         }
-
     }
 
 
