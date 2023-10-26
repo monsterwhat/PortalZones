@@ -18,8 +18,7 @@ import java.util.Objects;
 
 public class PortalZoneService {
 
-
-    public static boolean isWithinRegion(Player player, String regionName) {
+    public static boolean isPlayerWithinRegion(Player player, String regionName) {
         try {
             RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery();
             ApplicableRegionSet regions = query.getApplicableRegions(BukkitAdapter.adapt(player.getLocation()));
@@ -79,8 +78,10 @@ public class PortalZoneService {
             FileConfiguration config = getPortalZonesConfig();
             String path = "portalZones." + regionName + ".softCount";
             if (config.contains(path)) {
+                Bukkit.getLogger().info("Found softCount for " + regionName);
                 return config.getInt(path);
             }
+            Bukkit.getLogger().info("Did not find softCount for " + regionName);
             return 0; // Default value if not found.
         } catch (Exception e) {
             Bukkit.getLogger().warning("Error getting soft count for portal zone: " + regionName);
@@ -93,8 +94,10 @@ public class PortalZoneService {
             FileConfiguration config = getPortalZonesConfig();
             String path = "portalZones." + regionName + ".hardCount";
             if (config.contains(path)) {
+                Bukkit.getLogger().info("Found hardCount for " + regionName);
                 return config.getInt(path);
             }
+            Bukkit.getLogger().info("Did not find hardCount for " + regionName);
             return 0; // Default value if not found.
         } catch (Exception e) {
             Bukkit.getLogger().warning("Error getting hard count for portal zone: " + regionName);
@@ -102,7 +105,7 @@ public class PortalZoneService {
         }
     }
 
-    private static FileConfiguration getPortalZonesConfig() {
+    public static FileConfiguration getPortalZonesConfig() {
         // Load the portal zones configuration
         File configFile = new File(PortalZones.getPlugin(PortalZones.class).getDataFolder(), "portalzones.yml");
         return YamlConfiguration.loadConfiguration(configFile);

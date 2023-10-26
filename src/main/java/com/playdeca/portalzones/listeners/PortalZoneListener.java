@@ -1,7 +1,6 @@
 package com.playdeca.portalzones.listeners;
 
 import com.playdeca.portalzones.PortalZones;
-import com.playdeca.portalzones.objects.PortalZone;
 import com.playdeca.portalzones.services.PortalZoneService;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -15,19 +14,26 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PortalZoneListener implements Listener {
     private final PortalZones plugin;
-    private final HashMap<String, Location> portalZones;
+    private HashMap<String, Location> portalZones;
     BukkitTask SoftTimer, HardTimer, countDown;
-    boolean insidePortalZone = false;
     BossBar timeBar = Bukkit.createBossBar("", org.bukkit.boss.BarColor.YELLOW, org.bukkit.boss.BarStyle.SOLID);
+    boolean insidePortalZone = false;
+
 
     public PortalZoneListener(PortalZones plugin) {
         this.plugin = plugin;
+        this.portalZones = new HashMap<>();
+        loadZones();
+    }
+
+    public void loadZones(){
+        this.portalZones.clear();
         this.portalZones = PortalZoneService.getAllPortalZones();
     }
+
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
         try {
@@ -46,7 +52,7 @@ public class PortalZoneListener implements Listener {
                 String regionName = entry.getKey();
                 Location portalLocation = entry.getValue();
 
-                if (PortalZoneService.isWithinRegion(player, regionName)) {
+                if (PortalZoneService.isPlayerWithinRegion(player, regionName)) {
                     if (!insidePortalZone) {
                         Bukkit.getLogger().info(player.getName() + " entered a portal zone");
 
@@ -62,9 +68,8 @@ public class PortalZoneListener implements Listener {
                     playerInPortalZone = true;  // Set the flag to true as the player is within a portal zone
                 }
             }
-            // Check if the player left all portal zones
+            // Check if the player left the portal zone
             if (!playerInPortalZone && insidePortalZone) {
-                // Player left the portal zone
                 player.sendMessage("You have left a teleporting zone...");
                 Bukkit.getLogger().info(player.getName() + " left the portalZone");
                 CancelTimers(player);
@@ -73,6 +78,7 @@ public class PortalZoneListener implements Listener {
 
         } catch (Exception e) {
             Bukkit.getLogger().info("Error on checkPortalZones: " + e.getMessage());
+            Bukkit.getLogger().warning("Error checkingPortalZones: " + e.getLocalizedMessage());
         }
     }
 
@@ -82,10 +88,11 @@ public class PortalZoneListener implements Listener {
 
     void startSoftTimer(Player player, Location portalLocation, int softCount, int hardCount){
         if(softCount == 0){
+            Bukkit.getLogger().info("softCount is 0, setting to 20");
             softCount = 20;
         }
         player.sendMessage("Entered a teleporting zone...");
-
+        Bukkit.getLogger().info("Starting soft timer: " + softCount);
         SoftTimer = new BukkitRunnable() {
             @Override
             public void run() {
@@ -96,9 +103,10 @@ public class PortalZoneListener implements Listener {
 
     private void startHardTimer(Player player, int hardCount, Location portalLocation){
         if(hardCount == 0){
+            Bukkit.getLogger().info("hardCount is 0, setting to 20");
             hardCount = 20;
         }
-        Bukkit.getLogger().info("Starting hard timer for " + player.getName() + " in region " + portalLocation);
+        Bukkit.getLogger().info("Starting hard timer: " + hardCount);
         startCountdown(player, hardCount);
         HardTimer = new BukkitRunnable() {
             @Override
@@ -131,6 +139,7 @@ public class PortalZoneListener implements Listener {
                     }
                 }catch (Exception e){
                     Bukkit.getLogger().info("Error on startCountdown: " + e.getMessage());
+                    Bukkit.getLogger().warning("Error on startCountdown: " + e.getLocalizedMessage());
                 }
             }
         }.runTaskTimerAsynchronously(plugin,0L,20L);

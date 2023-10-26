@@ -1,19 +1,8 @@
 package com.playdeca.portalzones.objects;
 
-import com.playdeca.portalzones.PortalZones;
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldguard.WorldGuard;
-import com.sk89q.worldguard.protection.regions.RegionQuery;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
-import com.sk89q.worldguard.protection.ApplicableRegionSet;
-
-import java.io.File;
-import java.util.HashMap;
-import java.util.Objects;
 
 public class PortalZone {
     private String name, region1, region2;
