@@ -9,6 +9,17 @@ public class PortalZone {
     private int softCount, hardCount;
     private Location xyz1, xyz2;
 
+    public PortalZone(){
+        this.name = "";
+        this.region1 = "";
+        this.region2 = "";
+        this.softCount = 0;
+        this.hardCount = 0;
+        Location defaultLocation = new Location(Bukkit.getWorld("world"), 0, 0, 0);
+        this.xyz1 = defaultLocation;
+        this.xyz2 = defaultLocation;
+    }
+
     public PortalZone(String name, String region1, String region2, int softCount, int hardCount, Location xyz1, Location xyz2) {
         this.name = name;
         this.region1 = region1;

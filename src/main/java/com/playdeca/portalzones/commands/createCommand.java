@@ -23,27 +23,24 @@ public class createCommand extends ZonesHelper {
     }
 
     private void handleCreateCommand(Player player, String[] args){
-        if(player!=null){
-            if (args.length == 2) {
-                try {
-                    String zoneName = args[1];
-                    PortalZone newPortal = new PortalZone(zoneName);
-                    newPortal.saveToConfig(config);
-                    config.save(configFile);
-                    selectedZone = newPortal;
-                    player.sendMessage("Portal Zone created and selected: " + zoneName);
-                    portalZonesListener.loadZones();
-                } catch (IOException e) {
-                    Bukkit.getLogger().warning("Error saving portal zone: " + e.getMessage());
-                    Bukkit.getLogger().warning("Error saving portal zone: " + Arrays.toString(e.getStackTrace()));
-                    player.sendMessage("Failed to save the portal zone. Please check the console for errors.");
-                }
-            }else {
-                player.sendMessage("Usage: /pz newcreate <name>");
+        if (args.length == 2) {
+            try {
+                String zoneName = args[1];
+                PortalZone newPortal = new PortalZone(zoneName);
+                newPortal.saveToConfig(config);
+                config.save(configFile);
+                selectedZone = newPortal;
+                player.sendMessage("Portal Zone created and selected: " + zoneName);
+                portalZonesListener.loadZones();
+            } catch (IOException e) {
+                Bukkit.getLogger().warning("Error saving portal zone: " + e.getMessage());
+                Bukkit.getLogger().warning("Error saving portal zone: " + Arrays.toString(e.getStackTrace()));
+                player.sendMessage("Failed to save the portal zone. Please check the console for errors.");
             }
+        }else {
+            player.sendMessage("Usage: /pz create <name>");
         }
     }
-
 
 }
 

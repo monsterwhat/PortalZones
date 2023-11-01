@@ -13,7 +13,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import java.io.File;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Objects;
 
 public class PortalZoneService {
@@ -49,66 +49,43 @@ public class PortalZoneService {
         }
     }
 
-    public static HashMap<String, Location> getAllPortalZones() {
+    public static ArrayList<PortalZone> getAllPortalZonesComplete(){
         try {
-            // Save the new portal zone to the configuration
+
             File configFile = new File(PortalZones.getPlugin(PortalZones.class).getDataFolder(), "portalzones.yml");
             FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
 
-            HashMap<String, Location> portalZonesMap = new HashMap<>();
+            ArrayList<PortalZone> portalZonesList = new ArrayList<>();
 
             for (String name : Objects.requireNonNull(config.getConfigurationSection("portalZones")).getKeys(false)) {
                 PortalZone portalZone = loadFromConfig(config, name);
                 assert portalZone != null;
-                portalZonesMap.put(portalZone.getRegion1(), portalZone.getXyz1());
-                portalZonesMap.put(portalZone.getRegion2(), portalZone.getXyz2());
+                portalZonesList.add(portalZone);
             }
 
-            return portalZonesMap;
+            return portalZonesList;
+
         }catch (Exception e) {
             Bukkit.getLogger().warning("Error loading all portal zones");
             Bukkit.getLogger().warning(e.getMessage());
             return null;
         }
-
     }
 
-    public static int getSoftCountForPortalZone(String regionName) {
+    public static PortalZone loadZone(String name){
         try {
-            FileConfiguration config = getPortalZonesConfig();
-            String path = "portalZones." + regionName + ".softCount";
-            if (config.contains(path)) {
-                Bukkit.getLogger().info("Found softCount for " + regionName);
-                return config.getInt(path);
-            }
-            Bukkit.getLogger().info("Did not find softCount for " + regionName);
-            return 0; // Default value if not found.
-        } catch (Exception e) {
-            Bukkit.getLogger().warning("Error getting soft count for portal zone: " + regionName);
-            return 0;
-        }
-    }
+            File configFile = new File(PortalZones.getPlugin(PortalZones.class).getDataFolder(), "portalzones.yml");
+            FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
 
-    public static int getHardCountForPortalZone(String regionName) {
-        try {
-            FileConfiguration config = getPortalZonesConfig();
-            String path = "portalZones." + regionName + ".hardCount";
-            if (config.contains(path)) {
-                Bukkit.getLogger().info("Found hardCount for " + regionName);
-                return config.getInt(path);
-            }
-            Bukkit.getLogger().info("Did not find hardCount for " + regionName);
-            return 0; // Default value if not found.
-        } catch (Exception e) {
-            Bukkit.getLogger().warning("Error getting hard count for portal zone: " + regionName);
-            return 0;
-        }
-    }
+            PortalZone portalZone = loadFromConfig(config, name);
+            assert portalZone != null;
 
-    public static FileConfiguration getPortalZonesConfig() {
-        // Load the portal zones configuration
-        File configFile = new File(PortalZones.getPlugin(PortalZones.class).getDataFolder(), "portalzones.yml");
-        return YamlConfiguration.loadConfiguration(configFile);
+            return portalZone;
+        }catch (Exception e) {
+            Bukkit.getLogger().warning("Error loading portal zone: " + name);
+            Bukkit.getLogger().warning(e.getMessage());
+            return null;
+        }
     }
 
 }

@@ -23,16 +23,16 @@ public class updateCommand extends ZonesHelper {
                     if(selectedZone==null){
                         player.sendMessage("Please select a portal zone first.");
                         return false;
+                    }else{
+                        handleUpdateCommand(player, args);
+                        return true;
                     }
-                    handleUpdateCommand(player, args);
-                    return true;
                 }
         }
         return false;
     }
 
     private void handleUpdateCommand(Player player, String[] args){
-        if(player!=null){
             if (args.length < 2) {
                 player.sendMessage("Usage: /pz update <all|region1Name|region2Name|softCountTime|hardCountTime|Destination1|Destination2> <value>");
                 return;
@@ -52,7 +52,6 @@ public class updateCommand extends ZonesHelper {
                     updateHardCount(Integer.parseInt(args[5]));
                     player.sendMessage("Portal Zone updated: " + selectedZone.getName());
                     player.sendMessage("Destination1 & Destination2 Need to be manually set!");
-                    saveChanges(player);
                     break;
                 case "region1Name":
                     if (args.length != 3) {
@@ -60,7 +59,6 @@ public class updateCommand extends ZonesHelper {
                         break;
                     }
                     updateRegion1(args[2]);
-                    saveChanges(player);
                     break;
                 case "region2Name":
                     if (args.length != 3) {
@@ -68,7 +66,6 @@ public class updateCommand extends ZonesHelper {
                         break;
                     }
                     updateRegion2(args[2]);
-                    saveChanges(player);
                     break;
                 case "softcountTime":
                     if (args.length != 3) {
@@ -76,7 +73,6 @@ public class updateCommand extends ZonesHelper {
                         break;
                     }
                     updateSoftCount(Integer.parseInt(args[2]));
-                    saveChanges(player);
                     break;
                 case "hardcountTime":
                     if (args.length != 3) {
@@ -84,7 +80,6 @@ public class updateCommand extends ZonesHelper {
                         break;
                     }
                     updateHardCount(Integer.parseInt(args[2]));
-                    saveChanges(player);
                     break;
                 case "Destination1":
                     if (args.length != 2) {
@@ -92,7 +87,6 @@ public class updateCommand extends ZonesHelper {
                         break;
                     }
                     updateXYZ1(player);
-                    saveChanges(player);
                     break;
                 case "Destination2":
                     if (args.length != 2) {
@@ -100,13 +94,12 @@ public class updateCommand extends ZonesHelper {
                         break;
                     }
                     updateXYZ2(player);
-                    saveChanges(player);
                     break;
                 default:
                     player.sendMessage("Unknown property: " + property);
                     break;
             }
-        }
+        saveChanges(player);
     }
 
     private void updateRegion1(String regionName){

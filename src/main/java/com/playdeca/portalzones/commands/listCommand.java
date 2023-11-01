@@ -44,8 +44,16 @@ public class listCommand implements CommandExecutor {
                 int hardCount = config.getInt(path + ".hardCount");
                 Location xyz1 = Location.deserialize(Objects.requireNonNull(config.getConfigurationSection(path + ".xyz1")).getValues(true));
                 Location xyz2 = Location.deserialize(Objects.requireNonNull(config.getConfigurationSection(path + ".xyz2")).getValues(true));
-                player.sendMessage(name + " - Region1: " + region1 + " - Region2: " + region2 +
-                        " - SoftCount: " + softCount + " - HardCount: " + hardCount + " - XYZ1: " + xyz1.getX() + " " + xyz1.getY() + " " + xyz1.getZ() + " - XYZ2: " + xyz2.getX() + " " + xyz2.getY() + " " + xyz2.getZ());
+                String destination1 = "World: "+ xyz1.getWorld().getName() + ",X:" + xyz1.getBlockX() + ", Y:" + xyz1.getBlockY() + ", Z:" + xyz1.getBlockZ();
+                String destination2 = "World: "+ xyz2.getWorld().getName() + ",X:" + xyz2.getBlockX() + ", Y:" + xyz2.getBlockY() + ", Z:" + xyz2.getBlockZ();
+                player.sendMessage("Zone name: " + name);
+                player.sendMessage("Region 1: " + region1);
+                player.sendMessage("Region 2: " + region2);
+                player.sendMessage("Soft Count: " + softCount);
+                player.sendMessage("Hard Count: " + hardCount);
+                player.sendMessage("Destination 1: " + destination1);
+                player.sendMessage("Destination 2: " + destination2);
+                player.sendMessage(" ");
             }
         }
     }

@@ -20,6 +20,7 @@ public abstract class ZonesHelper implements CommandExecutor {
     protected SessionManager sessionManager;
 
     public ZonesHelper() {
+        selectedZone = new PortalZone();
         portalZonesPlugin = PortalZones.getPlugin(PortalZones.class);
         configFile = new File(PortalZones.getPlugin(PortalZones.class).getDataFolder(), "portalzones.yml");
         config = YamlConfiguration.loadConfiguration(configFile);
