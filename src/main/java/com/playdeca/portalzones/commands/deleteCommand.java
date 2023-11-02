@@ -1,7 +1,7 @@
 package com.playdeca.portalzones.commands;
 
 import com.playdeca.portalzones.PortalZones;
-import com.playdeca.portalzones.helpers.ZonesHelper;
+import com.playdeca.portalzones.services.HelperService;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -12,7 +12,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 
-public class deleteCommand extends ZonesHelper {
+public class deleteCommand extends HelperService {
+
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (sender instanceof Player player) {
@@ -41,7 +42,7 @@ public class deleteCommand extends ZonesHelper {
                 try {
                     config.save(configFile);
                     player.sendMessage("Portal zone '" + zoneName + "' has been deleted.");
-                    portalZonesListener.loadZones();
+                    pzService.loadZones();
                 } catch (Exception e) {
                     Bukkit.getLogger().warning("Error deleting portal zone: " + e.getMessage());
                     player.sendMessage("Failed to delete the portal zone. Please check the console for errors.");

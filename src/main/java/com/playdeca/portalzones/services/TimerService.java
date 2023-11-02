@@ -1,4 +1,4 @@
-package com.playdeca.portalzones.timers;
+package com.playdeca.portalzones.services;
 
 import com.playdeca.portalzones.PortalZones;
 import org.bukkit.Bukkit;
@@ -9,11 +9,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-public class ZoneTimers {
+public class TimerService {
     BukkitTask SoftTimer, HardTimer, countDown;
     public BossBar timeBar = Bukkit.createBossBar("", org.bukkit.boss.BarColor.YELLOW, org.bukkit.boss.BarStyle.SOLID);
     private final PortalZones plugin;
-    public ZoneTimers(PortalZones plugin) {
+    public TimerService(PortalZones plugin) {
         this.plugin = plugin;
     }
 

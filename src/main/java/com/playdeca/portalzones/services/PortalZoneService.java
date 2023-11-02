@@ -17,6 +17,79 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class PortalZoneService {
+    boolean insidePortalZone = false;
+    private ArrayList<PortalZone> zones;
+    private final TimerService timer;
+
+    public PortalZoneService(PortalZones plugin) {
+        this.timer = new TimerService(plugin);
+        this.zones = new ArrayList<>();
+        loadZones();
+    }
+
+    public void loadZones(){
+        this.zones = PortalZoneService.getAllPortalZonesComplete();
+    }
+
+    public void checkPortalZonesFull(Player player){
+        try {
+            boolean playerInPortalZone = false;
+
+            // Loop through all the portal zones
+            for (PortalZone portalZone : zones) {
+                String regionName = portalZone.getRegion1();
+                String regionName2 = portalZone.getRegion2();
+                Location portalLocation = portalZone.getXyz1();
+                Location portalLocation2 = portalZone.getXyz2();
+
+                if (PortalZoneService.isPlayerWithinRegion(player, regionName)) {
+                    if (!insidePortalZone) {
+                        Bukkit.getLogger().info(player.getName() + " entered a portal zone");
+
+                        // Get the softCount and hardCount from the PortalZone
+                        int softCount = portalZone.getSoftCount();
+                        int hardCount = portalZone.getHardCount();
+
+                        // Start the timer
+                        Bukkit.getLogger().info("Starting timers for " + player.getName() + " in region " + regionName);
+                        startTimers(player, portalLocation, softCount, hardCount);
+                        insidePortalZone = true; // Set the flag to true
+                    }
+                    playerInPortalZone = true;  // Set the flag to true as the player is within a portal zone
+                }
+                if (PortalZoneService.isPlayerWithinRegion(player, regionName2)){
+                    if (!insidePortalZone) {
+                        Bukkit.getLogger().info(player.getName() + " entered a portal zone");
+
+                        // Get the softCount and hardCount from the PortalZone
+                        int softCount = portalZone.getSoftCount();
+                        int hardCount = portalZone.getHardCount();
+
+                        // Start the timer
+                        Bukkit.getLogger().info("Starting timers for " + player.getName() + " in region " + regionName2);
+                        startTimers(player, portalLocation2, softCount, hardCount);
+                        insidePortalZone = true; // Set the flag to true
+                    }
+                    playerInPortalZone = true;  // Set the flag to true as the player is within a portal zone
+                }
+            }
+
+            // Check if the player left the portal zone
+            if (!playerInPortalZone && insidePortalZone) {
+                player.sendMessage("You have left a teleporting zone...");
+                Bukkit.getLogger().info(player.getName() + " left the portalZone");
+                timer.CancelTimers(player);
+                insidePortalZone = false; // Set the flag to false
+            }
+
+        }catch (Exception e) {
+            Bukkit.getLogger().warning("Error on checkPortalZonesFull: " + e.getMessage());
+        }
+    }
+
+    void startTimers(Player player, Location portalLocation, int softCount, int hardCount){
+        timer.startSoftTimer(player, portalLocation, softCount, hardCount);
+    }
 
     public static boolean isPlayerWithinRegion(Player player, String regionName) {
         try {

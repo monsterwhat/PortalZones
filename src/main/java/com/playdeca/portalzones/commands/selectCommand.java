@@ -1,7 +1,6 @@
 package com.playdeca.portalzones.commands;
 
-import com.playdeca.portalzones.helpers.ZonesHelper;
-import com.playdeca.portalzones.objects.PortalZone;
+import com.playdeca.portalzones.services.HelperService;
 import com.playdeca.portalzones.services.PortalZoneService;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -10,7 +9,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 
-public class selectCommand extends ZonesHelper {
+public class selectCommand extends HelperService {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (sender instanceof Player player) {

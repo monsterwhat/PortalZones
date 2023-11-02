@@ -1,4 +1,4 @@
-package com.playdeca.portalzones.helpers;
+package com.playdeca.portalzones.services;
 
 import com.playdeca.portalzones.PortalZones;
 import com.playdeca.portalzones.listeners.PortalZoneListener;
@@ -10,7 +10,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
 
-public abstract class ZonesHelper implements CommandExecutor {
+public abstract class HelperService implements CommandExecutor {
 
     protected FileConfiguration config;
     protected PortalZone selectedZone;
@@ -18,14 +18,16 @@ public abstract class ZonesHelper implements CommandExecutor {
     protected PortalZoneListener portalZonesListener;
     protected File configFile;
     protected SessionManager sessionManager;
+    protected PortalZoneService pzService;
 
-    public ZonesHelper() {
-        selectedZone = new PortalZone();
+    public HelperService() {
+        selectedZone = null;
         portalZonesPlugin = PortalZones.getPlugin(PortalZones.class);
         configFile = new File(PortalZones.getPlugin(PortalZones.class).getDataFolder(), "portalzones.yml");
         config = YamlConfiguration.loadConfiguration(configFile);
         portalZonesListener = new PortalZoneListener(portalZonesPlugin);
         sessionManager = WorldEdit.getInstance().getSessionManager();
+        pzService = new PortalZoneService(portalZonesPlugin);
     }
 
 }

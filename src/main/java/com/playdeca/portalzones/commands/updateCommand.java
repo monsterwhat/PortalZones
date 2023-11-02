@@ -1,6 +1,6 @@
 package com.playdeca.portalzones.commands;
 
-import com.playdeca.portalzones.helpers.ZonesHelper;
+import com.playdeca.portalzones.services.HelperService;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.math.BlockVector3;
@@ -15,7 +15,8 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.util.Arrays;
 
-public class updateCommand extends ZonesHelper {
+public class updateCommand extends HelperService {
+
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (sender instanceof Player player) {
@@ -35,12 +36,16 @@ public class updateCommand extends ZonesHelper {
     private void handleUpdateCommand(Player player, String[] args){
             if (args.length < 2) {
                 player.sendMessage("Usage: /pz update <all|region1Name|region2Name|softCountTime|hardCountTime|Destination1|Destination2> <value>");
+                player.sendMessage("To save changes use /pz update save");
                 return;
             }
 
             String property = args[1];
 
             switch (property) {
+                case "save":
+                    saveChanges(player);
+                    break;
                 case "all":
                     if (args.length != 6) {
                         player.sendMessage("Usage: /pz update <all> <region1Name> <region2Name> <softcountTime> <hardcountTime>");
@@ -99,7 +104,6 @@ public class updateCommand extends ZonesHelper {
                     player.sendMessage("Unknown property: " + property);
                     break;
             }
-        saveChanges(player);
     }
 
     private void updateRegion1(String regionName){
@@ -122,7 +126,9 @@ public class updateCommand extends ZonesHelper {
         selectedZone.setSoftCount(softCount);
     }
 
-    private void updateHardCount(int hardCount){ selectedZone.setHardCount(hardCount); }
+    private void updateHardCount(int hardCount){
+        selectedZone.setHardCount(hardCount);
+    }
 
     private void updateXYZ1(Player player){
         Region selection;
@@ -131,7 +137,7 @@ public class updateCommand extends ZonesHelper {
             selection = sessionManager.get(BukkitAdapter.adapt(player)).getSelection(world);
             if (selection != null) {
                 BlockVector3 newSelection = selection.getMaximumPoint();
-                Location newLocation = new Location(BukkitAdapter.adapt(selection.getWorld()), newSelection.getX(), newSelection.getY(), newSelection.getZ());
+                Location newLocation = new Location(BukkitAdapter.adapt(selection.getWorld()), newSelection.getX(), newSelection.getY()+1, newSelection.getZ());
                 selectedZone.setXyz1(newLocation);
             }else {
                 player.sendMessage("Please select the destination (Left Click) block using the WorldEdit wand tool before using this command.");
@@ -148,7 +154,7 @@ public class updateCommand extends ZonesHelper {
             selection = sessionManager.get(BukkitAdapter.adapt(player)).getSelection(world);
             if (selection != null) {
                 BlockVector3 newSelection = selection.getMaximumPoint();
-                Location newLocation = new Location(BukkitAdapter.adapt(selection.getWorld()), newSelection.getX(), newSelection.getY(), newSelection.getZ());
+                Location newLocation = new Location(BukkitAdapter.adapt(selection.getWorld()), newSelection.getX(), newSelection.getY()+1, newSelection.getZ());
                 selectedZone.setXyz2(newLocation);
             }else{
                 player.sendMessage("Please select the destination (Left Click) block using the WorldEdit wand tool before using this command.");
@@ -163,7 +169,7 @@ public class updateCommand extends ZonesHelper {
         selectedZone.saveToConfig(config);
         try {
             config.save(configFile);
-            portalZonesListener.loadZones();
+            pzService.loadZones();
             player.sendMessage("Portal Zone updated: " + selectedZone.getName());
 
         } catch (IOException e) {

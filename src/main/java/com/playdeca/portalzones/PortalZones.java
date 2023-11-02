@@ -6,7 +6,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.Arrays;
 
 public final class PortalZones extends JavaPlugin {
-
     private PortalZoneCommand PortalZoneCommand;
 
     @Override
