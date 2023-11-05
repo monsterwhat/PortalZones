@@ -1,5 +1,7 @@
 package com.playdeca.portalzones.commands;
 
+import com.playdeca.portalzones.objects.PortalZone;
+import com.playdeca.portalzones.objects.PortalZoneDAO;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -10,6 +12,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Set;
 
@@ -19,7 +22,7 @@ public class listCommand implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (sender instanceof Player player) {
                 if(args[0].equalsIgnoreCase("list")){
-                        handleListCommand(player);
+                        handleListCommandDB(player);
                         return true;
                     }
                 }
@@ -58,6 +61,31 @@ public class listCommand implements CommandExecutor {
                     player.sendMessage(" ");
                 }
             }
+        }catch (Exception e){
+            player.sendMessage("Error: " + e);
+            Bukkit.getLogger().warning("Error: " + e);
+            Bukkit.getLogger().warning("Error: " + e.getStackTrace());
+        }
+    }
+
+    private void handleListCommandDB(Player player) {
+
+        try {
+            ArrayList<PortalZone> zones = PortalZoneDAO.getAllPortalZones();
+            if(zones.isEmpty() || zones == null){
+                player.sendMessage("No portal zones found.");
+            }
+            for (PortalZone zone : zones) {
+                player.sendMessage("Zone name: " + zone.getName());
+                player.sendMessage("Region 1: " + zone.getRegion1());
+                player.sendMessage("Region 2: " + zone.getRegion2());
+                player.sendMessage("Soft Count: " + zone.getSoftCount());
+                player.sendMessage("Hard Count: " + zone.getHardCount());
+                player.sendMessage("Destination 1: " + zone.getXyz1().getX() + ", " + zone.getXyz1().getY() + ", " + zone.getXyz1().getZ());
+                player.sendMessage("Destination 2: " + zone.getXyz2().getX() + ", " + zone.getXyz2().getY() + ", " + zone.getXyz2().getZ());
+                player.sendMessage(" ");
+            }
+
         }catch (Exception e){
             player.sendMessage("Error: " + e);
             Bukkit.getLogger().warning("Error: " + e);

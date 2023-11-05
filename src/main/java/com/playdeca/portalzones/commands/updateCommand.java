@@ -17,6 +17,8 @@ import java.util.Arrays;
 
 public class updateCommand extends HelperService {
 
+
+
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (sender instanceof Player player) {
@@ -36,25 +38,21 @@ public class updateCommand extends HelperService {
     private void handleUpdateCommand(Player player, String[] args){
             if (args.length < 2) {
                 player.sendMessage("Usage: /pz update <all|region1Name|region2Name|softCountTime|hardCountTime|Destination1|Destination2> <value>");
-                player.sendMessage("To save changes use /pz update save");
                 return;
             }
 
             String property = args[1];
 
             switch (property) {
-                case "save":
-                    saveChanges(player);
-                    break;
                 case "all":
                     if (args.length != 6) {
                         player.sendMessage("Usage: /pz update <all> <region1Name> <region2Name> <softcountTime> <hardcountTime>");
                         break;
                     }
-                    updateRegion1(args[2]);
-                    updateRegion2(args[3]);
-                    updateSoftCount(Integer.parseInt(args[4]));
-                    updateHardCount(Integer.parseInt(args[5]));
+                    updateRegion1DB(args[2]);
+                    updateRegion2DB(args[3]);
+                    updateSoftCountDB(Integer.parseInt(args[4]));
+                    updateHardCountDB(Integer.parseInt(args[5]));
                     player.sendMessage("Portal Zone updated: " + selectedZone.getName());
                     player.sendMessage("Destination1 & Destination2 Need to be manually set!");
                     break;
@@ -63,47 +61,48 @@ public class updateCommand extends HelperService {
                         player.sendMessage("Usage: /pz update <region1> <regionName>");
                         break;
                     }
-                    updateRegion1(args[2]);
+                    updateRegion1DB(args[2]);
                     break;
                 case "region2Name":
                     if (args.length != 3) {
                         player.sendMessage("Usage: /pz update <region2> <regionName>");
                         break;
                     }
-                    updateRegion2(args[2]);
+                    updateRegion2DB(args[2]);
                     break;
                 case "softcountTime":
                     if (args.length != 3) {
                         player.sendMessage("Usage: /pz update <softcount> <Time>");
                         break;
                     }
-                    updateSoftCount(Integer.parseInt(args[2]));
+                    updateSoftCountDB(Integer.parseInt(args[2]));
                     break;
                 case "hardcountTime":
                     if (args.length != 3) {
                         player.sendMessage("Usage: /pz update <hardcount> <Time>");
                         break;
                     }
-                    updateHardCount(Integer.parseInt(args[2]));
+                    updateHardCountDB(Integer.parseInt(args[2]));
                     break;
                 case "Destination1":
                     if (args.length != 2) {
                         player.sendMessage("Usage: /pz update <Destination1>");
                         break;
                     }
-                    updateXYZ1(player);
+                    updateXYZ1DB(player);
                     break;
                 case "Destination2":
                     if (args.length != 2) {
                         player.sendMessage("Usage: /pz update <Destination2>");
                         break;
                     }
-                    updateXYZ2(player);
+                    updateXYZ2DB(player);
                     break;
                 default:
                     player.sendMessage("Unknown property: " + property);
                     break;
             }
+            pzService.loadZonesDB();
     }
 
     private void updateRegion1(String regionName){
@@ -114,6 +113,15 @@ public class updateCommand extends HelperService {
         selectedZone.setRegion1(regionName);
     }
 
+    private void updateRegion1DB(String regionName){
+        if(regionName.isEmpty() || regionName.isBlank()){
+            Bukkit.getLogger().warning("Region1 is empty");
+            return;
+        }
+        selectedZone.setRegion1(regionName);
+        portalZoneDAO.updatePortalZone(selectedZone);
+    }
+
     private void updateRegion2(String regionName){
         if(regionName.isEmpty() || regionName.isBlank()){
             Bukkit.getLogger().warning("Region2 is empty");
@@ -122,12 +130,31 @@ public class updateCommand extends HelperService {
         selectedZone.setRegion2(regionName);
     }
 
+    private void updateRegion2DB(String regionName){
+        if(regionName.isEmpty() || regionName.isBlank()){
+            Bukkit.getLogger().warning("Region2 is empty");
+            return;
+        }
+        selectedZone.setRegion2(regionName);
+        portalZoneDAO.updatePortalZone(selectedZone);
+    }
+
     private void updateSoftCount(int softCount){
         selectedZone.setSoftCount(softCount);
     }
 
     private void updateHardCount(int hardCount){
         selectedZone.setHardCount(hardCount);
+    }
+
+    private void updateSoftCountDB(int softCount){
+        selectedZone.setSoftCount(softCount);
+        portalZoneDAO.updatePortalZone(selectedZone);
+    }
+
+    private void updateHardCountDB(int hardCount){
+        selectedZone.setHardCount(hardCount);
+        portalZoneDAO.updatePortalZone(selectedZone);
     }
 
     private void updateXYZ1(Player player){
@@ -147,6 +174,26 @@ public class updateCommand extends HelperService {
             Bukkit.getLogger().warning("Error updating XYZ1: " + Arrays.toString(e.getStackTrace()));
         }
     }
+
+    private void updateXYZ1DB(Player player){
+        Region selection;
+        try {
+            World world = new BukkitWorld(player.getWorld());
+            selection = sessionManager.get(BukkitAdapter.adapt(player)).getSelection(world);
+            if (selection != null) {
+                BlockVector3 newSelection = selection.getMaximumPoint();
+                Location newLocation = new Location(BukkitAdapter.adapt(selection.getWorld()), newSelection.getX(), newSelection.getY()+1, newSelection.getZ());
+                selectedZone.setXyz1(newLocation);
+                portalZoneDAO.updatePortalZone(selectedZone);
+            }else {
+                player.sendMessage("Please select the destination (Left Click) block using the WorldEdit wand tool before using this command.");
+            }
+        }catch (Exception e){
+            Bukkit.getLogger().warning("Error updating XYZ1: " + e.getMessage());
+            Bukkit.getLogger().warning("Error updating XYZ1: " + Arrays.toString(e.getStackTrace()));
+        }
+    }
+
     private void updateXYZ2(Player player){
         Region selection;
         try {
@@ -156,6 +203,25 @@ public class updateCommand extends HelperService {
                 BlockVector3 newSelection = selection.getMaximumPoint();
                 Location newLocation = new Location(BukkitAdapter.adapt(selection.getWorld()), newSelection.getX(), newSelection.getY()+1, newSelection.getZ());
                 selectedZone.setXyz2(newLocation);
+            }else{
+                player.sendMessage("Please select the destination (Left Click) block using the WorldEdit wand tool before using this command.");
+            }
+        }catch (Exception e){
+            Bukkit.getLogger().warning("Error updating XYZ2: " + e.getMessage());
+            Bukkit.getLogger().warning("Error updating XYZ2: " + Arrays.toString(e.getStackTrace()));
+        }
+    }
+
+    private void updateXYZ2DB(Player player){
+        Region selection;
+        try {
+            World world = new BukkitWorld(player.getWorld());
+            selection = sessionManager.get(BukkitAdapter.adapt(player)).getSelection(world);
+            if (selection != null) {
+                BlockVector3 newSelection = selection.getMaximumPoint();
+                Location newLocation = new Location(BukkitAdapter.adapt(selection.getWorld()), newSelection.getX(), newSelection.getY()+1, newSelection.getZ());
+                selectedZone.setXyz2(newLocation);
+                portalZoneDAO.updatePortalZone(selectedZone);
             }else{
                 player.sendMessage("Please select the destination (Left Click) block using the WorldEdit wand tool before using this command.");
             }
@@ -177,5 +243,6 @@ public class updateCommand extends HelperService {
             Bukkit.getLogger().warning("Error saving portal zone: " + Arrays.toString(e.getStackTrace()));
         }
     }
+
 
 }

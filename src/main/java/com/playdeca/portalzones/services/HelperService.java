@@ -3,6 +3,7 @@ package com.playdeca.portalzones.services;
 import com.playdeca.portalzones.PortalZones;
 import com.playdeca.portalzones.listeners.PortalZoneListener;
 import com.playdeca.portalzones.objects.PortalZone;
+import com.playdeca.portalzones.objects.PortalZoneDAO;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.session.SessionManager;
 import org.bukkit.command.CommandExecutor;
@@ -19,6 +20,7 @@ public abstract class HelperService implements CommandExecutor {
     protected File configFile;
     protected SessionManager sessionManager;
     protected PortalZoneService pzService;
+    protected PortalZoneDAO portalZoneDAO;
 
     public HelperService() {
         selectedZone = null;
@@ -28,6 +30,7 @@ public abstract class HelperService implements CommandExecutor {
         portalZonesListener = new PortalZoneListener(portalZonesPlugin);
         sessionManager = WorldEdit.getInstance().getSessionManager();
         pzService = new PortalZoneService(portalZonesPlugin);
+        portalZoneDAO = new PortalZoneDAO(portalZonesPlugin);
     }
 
 }

@@ -2,6 +2,7 @@ package com.playdeca.portalzones.services;
 
 import com.playdeca.portalzones.PortalZones;
 import com.playdeca.portalzones.objects.PortalZone;
+import com.playdeca.portalzones.objects.PortalZoneDAO;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
@@ -24,11 +25,15 @@ public class PortalZoneService {
     public PortalZoneService(PortalZones plugin) {
         this.timer = new TimerService(plugin);
         this.zones = new ArrayList<>();
-        loadZones();
+        loadZonesDB();
     }
 
     public void loadZones(){
         this.zones = PortalZoneService.getAllPortalZonesComplete();
+    }
+
+    public void loadZonesDB(){
+        this.zones = PortalZoneDAO.getAllPortalZones();
     }
 
     public void checkPortalZonesFull(Player player){

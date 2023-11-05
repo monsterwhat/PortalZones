@@ -1,6 +1,7 @@
 package com.playdeca.portalzones.commands;
 
 import com.playdeca.portalzones.PortalZones;
+import com.playdeca.portalzones.objects.PortalZone;
 import com.playdeca.portalzones.services.HelperService;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -9,7 +10,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-
 import java.io.File;
 
 public class deleteCommand extends HelperService {
@@ -19,7 +19,7 @@ public class deleteCommand extends HelperService {
         if (sender instanceof Player player) {
                 if(args[0].equalsIgnoreCase("delete")){
                     if(args.length == 2){
-                        handleDeleteCommand(player, args, label);
+                        handleDeleteCommandDB(player, args, label);
                         return true;
                     }
                 }
@@ -50,6 +50,30 @@ public class deleteCommand extends HelperService {
             } else {
                 player.sendMessage("Portal zone with the name '" + zoneName + "' not found.");
             }
+        } else {
+            player.sendMessage("Usage: /" + label + " delete <zoneName>");
+        }
+    }
+
+    private void handleDeleteCommandDB(Player player, String[] args, String label) {
+        if (args.length == 2) {
+            String zoneName = args[1];
+
+            try {
+            // Load the list of portal zones from the configuration
+                PortalZone portalZone = portalZoneDAO.readPortalZone(zoneName);
+                if (portalZone != null) {
+                    portalZoneDAO.deletePortalZone(zoneName);
+                    player.sendMessage("Portal zone '" + zoneName + "' has been deleted.");
+                    pzService.loadZonesDB();
+                }else {
+                    player.sendMessage("Portal zone with the name '" + zoneName + "' not found.");
+                }
+
+                } catch (Exception e) {
+                    Bukkit.getLogger().warning("Error deleting portal zone: " + e.getMessage());
+                    player.sendMessage("Failed to delete the portal zone. Please check the console for errors.");
+                }
         } else {
             player.sendMessage("Usage: /" + label + " delete <zoneName>");
         }

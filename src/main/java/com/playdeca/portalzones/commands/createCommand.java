@@ -16,7 +16,7 @@ public class createCommand extends HelperService {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (sender instanceof Player player) {
             if(args[0].equalsIgnoreCase("create")){
-                handleCreateCommand(player, args);
+                handleCreateCommandDB(player, args);
                 return true;
             }
         }
@@ -38,6 +38,21 @@ public class createCommand extends HelperService {
                 Bukkit.getLogger().warning("Error saving portal zone: " + Arrays.toString(e.getStackTrace()));
                 player.sendMessage("Failed to save the portal zone. Please check the console for errors.");
             }
+        }else {
+            player.sendMessage("Usage: /pz create <name>");
+        }
+    }
+
+    private void handleCreateCommandDB(Player player, String[] args){
+        if (args.length == 2) {
+            String zoneName = args[1];
+            PortalZone newPortal = new PortalZone(zoneName);
+            //Save portal to DB
+            portalZoneDAO.createPortalZone(newPortal);
+            selectedZone = newPortal;
+            player.sendMessage("Portal Zone created and selected: " + zoneName);
+            //re-Load zones from DB
+            pzService.loadZonesDB();
         }else {
             player.sendMessage("Usage: /pz create <name>");
         }

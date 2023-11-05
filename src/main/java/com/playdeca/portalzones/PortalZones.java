@@ -2,6 +2,7 @@ package com.playdeca.portalzones;
 
 import com.playdeca.portalzones.commands.*;
 import com.playdeca.portalzones.listeners.PortalZoneListener;
+import com.playdeca.portalzones.objects.PortalZoneDAO;
 import org.bukkit.plugin.java.JavaPlugin;
 import java.util.Arrays;
 
@@ -17,6 +18,9 @@ public final class PortalZones extends JavaPlugin {
                 getServer().getPluginManager().disablePlugin(this);
                 return;
             }
+
+            // Initialize your PortalZoneDAO
+            PortalZoneDAO portalZoneDAO = new PortalZoneDAO(this);
 
             PortalZoneCommand = new PortalZoneCommand();
 
@@ -70,6 +74,8 @@ public final class PortalZones extends JavaPlugin {
             return false;
         }
     }
+
+
 
 }
 

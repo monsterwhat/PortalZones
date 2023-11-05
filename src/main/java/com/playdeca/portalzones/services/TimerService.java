@@ -18,12 +18,8 @@ public class TimerService {
     }
 
     public void startSoftTimer(Player player, Location portalLocation, int softCount, int hardCount){
-        if(softCount == 0){
-            Bukkit.getLogger().info("softCount is 0, setting to 20");
-            softCount = 20;
-        }
-        player.sendMessage("Entered a teleporting zone...");
-        Bukkit.getLogger().info("Starting soft timer: " + softCount);
+        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
+
         SoftTimer = new BukkitRunnable() {
             @Override
             public void run() {
@@ -33,16 +29,13 @@ public class TimerService {
     }
 
     public void startHardTimer(Player player, int hardCount, Location portalLocation){
-        if(hardCount == 0){
-            Bukkit.getLogger().info("hardCount is 0, setting to 20");
-            hardCount = 20;
-        }
-        Bukkit.getLogger().info("Starting hard timer: " + hardCount);
         startCountdown(player, hardCount);
+
         HardTimer = new BukkitRunnable() {
             @Override
             public void run() {
                 player.teleport(portalLocation);
+                player.playSound(player.getLocation(), Sound.ITEM_CHORUS_FRUIT_TELEPORT, 1, 1);
             }
         }.runTaskLater(this.plugin, 20L*hardCount);
     }
@@ -65,8 +58,7 @@ public class TimerService {
                         timeBar.setProgress((double) timeLeft / countDownTime);
                     }else{
                         player.sendMessage("Teleporting...");
-                        player.playSound(player.getLocation(), Sound.ITEM_CHORUS_FRUIT_TELEPORT, 1, 1);
-                        countDown.cancel();
+                        CancelTimers(player);
                     }
                 }catch (Exception e){
                     Bukkit.getLogger().info("Error on startCountdown: " + e.getMessage());
