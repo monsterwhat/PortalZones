@@ -21,6 +21,8 @@ public final class PortalZones extends JavaPlugin {
 
             // Initialize your PortalZoneDAO
             PortalZoneDAO portalZoneDAO = new PortalZoneDAO(this);
+            // Check if the database exists, if not create it
+            portalZoneDAO.checkIfDBExistsIfNotCreate();
 
             PortalZoneCommand = new PortalZoneCommand();
 

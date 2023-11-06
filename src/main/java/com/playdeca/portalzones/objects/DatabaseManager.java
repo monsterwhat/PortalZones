@@ -1,6 +1,5 @@
 package com.playdeca.portalzones.objects;
 
-import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -13,8 +12,8 @@ public class DatabaseManager {
     private Connection connection;
     private static final String DATABASE_NAME = "portal_zone.db";
     private final JavaPlugin plugin;
-    private File dataFolder;
-    private File databaseFile;
+    private final File dataFolder;
+    private final File databaseFile;
     private static DatabaseManager instance;
 
     public DatabaseManager(JavaPlugin plugin) {
@@ -43,7 +42,6 @@ public class DatabaseManager {
 
                 // Connect to the database
                 connection = DriverManager.getConnection("jdbc:sqlite:" + databaseFile.getAbsolutePath());
-                plugin.getLogger().info("Database connection established.");
             }
         } catch (ClassNotFoundException | SQLException e) {
             plugin.getLogger().warning("Error connecting to database.");

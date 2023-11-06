@@ -13,11 +13,11 @@ public class PortalZoneCommand implements CommandExecutor {
         if(args.length < 1) return handleEmptyArgs(sender);
         return switch (args[0].toLowerCase()) {
             case "create" -> new createCommand().onCommand(sender, command, label, args);
+            case "update" -> new updateCommand().onCommand(sender, command, label, args);
+            case "select" -> new selectCommand().onCommand(sender, command, label, args);
+            case "list" -> new listCommand().onCommand(sender, command, label, args);
             case "delete" -> new deleteCommand().onCommand(sender, command, label, args);
             case "help" -> new helpCommand().onCommand(sender, command, label, args);
-            case "list" -> new listCommand().onCommand(sender, command, label, args);
-            case "select" -> new selectCommand().onCommand(sender, command, label, args);
-            case "update" -> new updateCommand().onCommand(sender, command, label, args);
             default -> false;
         };
     }

@@ -2,58 +2,39 @@ package com.playdeca.portalzones.objects;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.World;
 
 public class PortalZone {
+    private int id;
     private String name, region1, region2;
     private int softCount, hardCount;
     private Location xyz1, xyz2;
+    private World world1, world2;
 
-    public PortalZone(){
-        this.name = "";
-        this.region1 = "";
-        this.region2 = "";
-        this.softCount = 0;
-        this.hardCount = 0;
-        Location defaultLocation = new Location(Bukkit.getWorld("world"), 0, 0, 0);
-        this.xyz1 = defaultLocation;
-        this.xyz2 = defaultLocation;
-    }
-
-    public PortalZone(String name, String region1, String region2, int softCount, int hardCount, Location xyz1, Location xyz2) {
+    public PortalZone(int id, String name, String region1, String region2,int softCount, int hardCount, Location xyz1,World world1, Location xyz2, World world2) {
+        this.id = id;
         this.name = name;
         this.region1 = region1;
         this.region2 = region2;
         this.softCount = softCount;
         this.hardCount = hardCount;
         this.xyz1 = xyz1;
+        this.world1 = world1;
         this.xyz2 = xyz2;
+        this.world2 = world2;
     }
 
-    public PortalZone(String name){
+    public PortalZone(String name, World world1){
         this.name = name;
         this.region1 = "";
         this.region2 = "";
         this.softCount = 0;
         this.hardCount = 0;
-        Location defaultLocation = new Location(Bukkit.getWorld("world"), 0, 0, 0);
+        Location defaultLocation = new Location(world1, 0, 0, 0);
         this.xyz1 = defaultLocation;
+        this.world1 = world1;
         this.xyz2 = defaultLocation;
-    }
-
-    public void saveToConfig(FileConfiguration config) {
-        try {
-            String path = "portalZones." + name;
-            config.set(path + ".region1", region1);
-            config.set(path + ".region2", region2);
-            config.set(path + ".softCount", softCount);
-            config.set(path + ".hardCount", hardCount);
-            config.set(path + ".xyz1", xyz1.serialize()); // Serialize the Location
-            config.set(path + ".xyz2", xyz2.serialize());
-        }catch (Exception e){
-            Bukkit.getLogger().warning("Error saving portal zone: " + name);
-            Bukkit.getLogger().warning(e.getMessage());
-        }
+        this.world2 = world1;
     }
 
     public String getName() {
@@ -84,6 +65,34 @@ public class PortalZone {
         return xyz2;
     }
 
+    public int getId(){
+        return id;
+    }
+
+    public World getWorld1() {
+        return world1;
+    }
+
+    public World getWorld2() {
+        return world2;
+    }
+
+    public void setWorld1(World world1) {
+        this.world1 = world1;
+    }
+
+    public void setWorld2(World world2) {
+        this.world2 = world2;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setId(int id){
+        this.id = id;
+    }
+
     public void setRegion1(String region1) {
         this.region1 = region1;
     }
@@ -107,6 +116,7 @@ public class PortalZone {
     public void setXyz2(Location xyz2) {
         this.xyz2 = xyz2;
     }
+
 
 
 }
