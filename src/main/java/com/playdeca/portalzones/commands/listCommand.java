@@ -33,13 +33,7 @@ public class listCommand extends HelperService {
             }
             player.sendMessage("Portal Zones: ");
             for (PortalZone zone : zones) {
-                player.sendMessage(displayZoneName(zone.getName()));
-                player.sendMessage(displayRegion1(zone.getRegion1()));
-                player.sendMessage(displayRegion2(zone.getRegion2()));
-                player.sendMessage(displaySoftCount(zone.getSoftCount()));
-                player.sendMessage(displayHardCount(zone.getHardCount()));
-                player.sendMessage(displayDestination1(zone.getWorld1() + ", " + zone.getXyz1().getX() + ", " + zone.getXyz1().getY() + ", " + zone.getXyz1().getZ()));
-                player.sendMessage(displayDestination2(zone.getWorld2() + ", " + zone.getXyz2().getX() + ", " + zone.getXyz2().getY() + ", " + zone.getXyz2().getZ()));
+                player.sendMessage(simpleRegionInfo(zone));
             }
 
         }catch (Exception e){

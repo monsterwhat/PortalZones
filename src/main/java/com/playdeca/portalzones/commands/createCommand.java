@@ -28,13 +28,13 @@ public class createCommand extends HelperService {
             portalZoneDAO.createPortalZone(newPortal);
             ZoneManager.getInstance().setSelectedZone(newPortal);
             player.sendMessage("Portal Zone created and selected: " + zoneName);
-            player.sendMessage(displayZoneName(zoneName));
-            player.sendMessage(displayRegion1(newPortal.getRegion1()));
-            player.sendMessage(displayRegion2(newPortal.getRegion2()));
-            player.sendMessage(displaySoftCount(newPortal.getSoftCount()));
-            player.sendMessage(displayHardCount(newPortal.getHardCount()));
-            player.sendMessage(displayDestination1(newPortal.getXyz1().toString()));
-            player.sendMessage(displayDestination2(newPortal.getXyz2().toString()));
+            player.sendMessage(displayZoneName(newPortal));
+            player.sendMessage(displayRegion1(newPortal));
+            player.sendMessage(displayRegion2(newPortal));
+            player.sendMessage(displaySoftCount(newPortal));
+            player.sendMessage(displayHardCount(newPortal));
+            player.sendMessage(displayDestination1(newPortal));
+            player.sendMessage(displayDestination2(newPortal));
 
             //re-Load zones from DB
             ZoneManager.getInstance().loadZones();

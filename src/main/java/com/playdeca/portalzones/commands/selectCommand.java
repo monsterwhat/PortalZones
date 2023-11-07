@@ -37,13 +37,13 @@ public class selectCommand extends HelperService {
                 }
                 ZoneManager.getInstance().setSelectedZone(zone);
 
-                player.sendMessage(displayZoneName(zone.getName()));
-                player.sendMessage(displayRegion1(zone.getRegion1()));
-                player.sendMessage(displayRegion2(zone.getRegion2()));
-                player.sendMessage(displaySoftCount(zone.getSoftCount()));
-                player.sendMessage(displayHardCount(zone.getHardCount()));
-                player.sendMessage(displayDestination1(zone.getXyz1().toString()));
-                player.sendMessage(displayDestination2(zone.getXyz2().toString()));
+                player.sendMessage(displayZoneName(zone));
+                player.sendMessage(displayRegion1(zone));
+                player.sendMessage(displayRegion2(zone));
+                player.sendMessage(displaySoftCount(zone));
+                player.sendMessage(displayHardCount(zone));
+                player.sendMessage(displayDestination1(zone));
+                player.sendMessage(displayDestination2(zone));
 
             }catch (Exception e){
                 Bukkit.getLogger().warning("Error selecting portal zone: " + e.getMessage());

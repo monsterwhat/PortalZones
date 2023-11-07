@@ -7,7 +7,6 @@ import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.world.World;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -110,7 +109,7 @@ public class updateCommand extends HelperService {
         }
         ZoneManager.getInstance().getSelectedZone().setRegion1(regionName);
         portalZoneDAO.updatePortalZone(ZoneManager.getInstance().getSelectedZone());
-        player.sendMessage("Region1 ->" + ZoneManager.getInstance().getSelectedZone().getRegion1());
+        player.sendMessage("Region1 ->" + ZoneManager.getInstance().getSelectedZone().getRegion1() + " updated.");
     }
 
     private void updateRegion2DB(String regionName, Player player){
@@ -120,19 +119,19 @@ public class updateCommand extends HelperService {
         }
         ZoneManager.getInstance().getSelectedZone().setRegion2(regionName);
         portalZoneDAO.updatePortalZone(ZoneManager.getInstance().getSelectedZone());
-        player.sendMessage("Region2 ->" + ZoneManager.getInstance().getSelectedZone().getRegion2());
+        player.sendMessage("Region2 ->" + ZoneManager.getInstance().getSelectedZone().getRegion2() + " updated.");
     }
 
     private void updateSoftCountDB(int softCount, Player player){
         ZoneManager.getInstance().getSelectedZone().setSoftCount(softCount);
         portalZoneDAO.updatePortalZone(ZoneManager.getInstance().getSelectedZone());
-        player.sendMessage("SoftCountTime ->" + ZoneManager.getInstance().getSelectedZone().getSoftCount());
+        player.sendMessage("SoftCountTime ->" + ZoneManager.getInstance().getSelectedZone().getSoftCount() + " updated.");
     }
 
     private void updateHardCountDB(int hardCount, Player player){
         ZoneManager.getInstance().getSelectedZone().setHardCount(hardCount);
         portalZoneDAO.updatePortalZone(ZoneManager.getInstance().getSelectedZone());
-        player.sendMessage("HardCountTime ->" + ZoneManager.getInstance().getSelectedZone().getHardCount());
+        player.sendMessage("HardCountTime ->" + ZoneManager.getInstance().getSelectedZone().getHardCount() + " updated.");
     }
 
     private void updateXYZ1DB(Player player){
@@ -145,7 +144,7 @@ public class updateCommand extends HelperService {
                 Location newLocation = new Location(BukkitAdapter.adapt(selection.getWorld()), newSelection.getX(), newSelection.getY()+1, newSelection.getZ());
                 ZoneManager.getInstance().getSelectedZone().setXyz1(newLocation);
                 portalZoneDAO.updatePortalZone(ZoneManager.getInstance().getSelectedZone());
-                player.sendMessage("Destination1 ->" + ZoneManager.getInstance().getSelectedZone().getRegion1());
+                player.sendMessage("Destination1 ->" + ZoneManager.getInstance().getSelectedZone().getRegion1() + " updated.");
             }else {
                 player.sendMessage("Please select the destination (Left Click) block using the WorldEdit wand tool before using this command.");
             }
