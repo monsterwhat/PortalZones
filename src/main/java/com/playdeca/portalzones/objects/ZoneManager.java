@@ -36,8 +36,4 @@ public class ZoneManager {
         return zones;
     }
 
-    public void setZones(ArrayList<PortalZone> zones) {
-        this.zones = zones;
-    }
-
 }

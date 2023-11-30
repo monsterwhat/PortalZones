@@ -19,7 +19,7 @@ public final class PortalZones extends JavaPlugin {
                 return;
             }
 
-            // Initialize your PortalZoneDAO
+            // Initialize PortalZoneDAO
             PortalZoneDAO portalZoneDAO = new PortalZoneDAO(this);
             // Check if the database exists, if not create it
             portalZoneDAO.checkIfDBExistsIfNotCreate();
